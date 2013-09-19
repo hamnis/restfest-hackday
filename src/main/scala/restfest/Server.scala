@@ -20,9 +20,10 @@ object Server extends App {
 
 object Resources extends Plan {
   val selectable = {
-    val files = new java.io.File("/Users/maedhros/Music/In Flames/Clayman").listFiles(new FileFilter {
+    val files = new java.io.File("/Users/maedhros/Music/In Flames/Clayman").getAbsoluteFile.listFiles(new FileFilter {
       def accept(pathname: File) = pathname.toString.endsWith(".mp3")
     })
+    println(files.toSeq)
     files.map(f => UUID.randomUUID().toString -> f).toMap
   }
 
@@ -44,13 +45,29 @@ object Resources extends Plan {
     } yield {
       Ok ~> ContentType("application/vnd.mogsie.work-order+json") ~> {
         val input = JObject("href" -> JString("/binary/" + item) , "volume" -> JInt(100))
-        val wo: JValue = WorkOrder(Player.Type, input, None, None, None, None).asJson
+        val wo: JValue = WorkOrder(Player.Type, input, Some(URI.create("/work-item/" + item + "/start")), None, Some(URI.create("/work-item/" + item + "/complete")), None).asJson
         new ResponseWriter {
           def write(os: OutputStreamWriter) {
             os.write(JM.pretty(JM.render(wo)))
           }
         }
       }
+    }
+    case Path(Seg("work-item" :: item :: "start" :: Nil)) => for {
+      _ <- POST
+      _ <- commit
+      i <- getOrElse(selectable.get(item), NotFound)
+    } yield {
+      println(s"Starting! playing '$i' with id $item")
+      Ok ~> ResponseString("OK")
+    }
+    case Path(Seg("work-item" :: item :: "complete" :: Nil)) => for {
+      _ <- POST
+      _ <- commit
+      i <- getOrElse(selectable.get(item), NotFound)
+    } yield {
+      println(s"Completed! playing '$i' with id $item")
+      Ok ~> ResponseString("OK")
     }
     case Path(Seg("binary" :: item :: Nil)) => for {
       _ <- GET
