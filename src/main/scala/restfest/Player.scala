@@ -13,5 +13,5 @@ object Player {
     builder.build()
   }
 
-  def create(sound: Sound): AudioClip = create(sound.href, sound.volume)
+  def create(sound: Sound): AudioClip = create(sound.uri, sound.volume)
 }

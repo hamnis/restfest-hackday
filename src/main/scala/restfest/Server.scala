@@ -44,7 +44,7 @@ object Resources extends Plan {
       i <- getOrElse(selectable.get(item), NotFound)
     } yield {
       Ok ~> ContentType("application/vnd.mogsie.work-order+json") ~> {
-        val input = JObject("href" -> JString("/binary/" + item) , "volume" -> JInt(100))
+        val input = JObject("uri" -> JString("/binary/" + item) , "volume" -> JInt(100))
         val wo: JValue = WorkOrder(Player.Type, input, Some(URI.create("/work-item/" + item + "/start")), None, Some(URI.create("/work-item/" + item + "/complete")), None).asJson
         new ResponseWriter {
           def write(os: OutputStreamWriter) {

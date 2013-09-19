@@ -43,7 +43,7 @@ object Main extends App {
           wo <- workOrder
           clip <- {
             val sound = wo.as[Sound]
-            Some(Player.create(base.resolve(sound.href), sound.volume))
+            Some(Player.create(base.resolve(sound.uri), sound.volume))
           }
           _ <- {
             clip.play()
